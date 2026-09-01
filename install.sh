@@ -13,12 +13,18 @@ echo "════════════════════════�
 echo ""
 
 # ── Check Python ──────────────────────────────────────────────────────────────
-if command -v python3 &>/dev/null; then
+if command -v python3.12 &>/dev/null; then
+    PYTHON=python3.12
+elif command -v python3.11 &>/dev/null; then
+    PYTHON=python3.11
+elif command -v python3.10 &>/dev/null; then
+    PYTHON=python3.10
+elif command -v python3 &>/dev/null; then
     PYTHON=python3
 elif command -v python &>/dev/null; then
     PYTHON=python
 else
-    echo "ERROR: Python 3 is required but not found."
+    echo "ERROR: Python 3.10+ is required but not found."
     echo "Install it from https://python.org/downloads"
     exit 1
 fi
