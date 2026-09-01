@@ -122,23 +122,26 @@ async def search_contacts(
     phone: Optional[str] = None,
     tag: Optional[str] = None,
     limit: int = 25,
-    skip: int = 0,
 ) -> str:
     """Search contacts in the GHL sub-account. Supports full-text search and filters.
 
+    GET /contacts/ rejects `skip` and `email` outright ("property skip should not
+    exist", 422), so this tool was returning nothing but errors. There is no
+    offset pagination on this endpoint any more: raise `limit` instead. An email
+    is passed through `query`, whose full-text index already covers the email
+    field.
+
     Args:
         query: Full-text search across name, email, phone
-        email: Filter by exact email
+        email: Email to look for, searched via query
         phone: Filter by phone number
         tag: Filter by tag name
         limit: Number of results (max 100)
-        skip: Offset for pagination
     """
-    params: dict = {"locationId": _loc(), "limit": limit, "skip": skip}
-    if query:
-        params["query"] = query
-    if email:
-        params["email"] = email
+    params: dict = {"locationId": _loc(), "limit": limit}
+    search = query or email
+    if search:
+        params["query"] = search
     if phone:
         params["phone"] = phone
     if tag:
@@ -435,7 +438,7 @@ async def search_opportunities(
         limit: Number of results (max 100)
         skip: Offset for pagination
     """
-    params: dict = {"location_id": _loc(), "limit": limit, "skip": skip}
+    params: dict = {"location_id": _loc(), "limit": limit}
     if pipeline_id:
         params["pipeline_id"] = pipeline_id
     if stage_id:
@@ -1008,20 +1011,21 @@ async def list_forms(limit: int = 25, skip: int = 0) -> str:
 async def get_form_submissions(
     form_id: Optional[str] = None,
     limit: int = 25,
-    skip: int = 0,
     start_at: Optional[str] = None,
     end_at: Optional[str] = None,
 ) -> str:
     """Get form submission data.
 
+    GET /forms/submissions rejects `skip` with a 422, so there is no offset
+    pagination here any more: raise `limit` or narrow with the date range.
+
     Args:
-        form_id: Filter to a specific form ID (optional — returns all if omitted)
+        form_id: Filter to a specific form ID (optional, returns all if omitted)
         limit: Number of results (max 100)
-        skip: Offset for pagination
         start_at: Filter submissions after this date (ISO 8601)
         end_at: Filter submissions before this date (ISO 8601)
     """
-    params: dict = {"locationId": _loc(), "limit": limit, "skip": skip}
+    params: dict = {"locationId": _loc(), "limit": limit}
     if form_id:
         params["formId"] = form_id
     if start_at:
@@ -1048,20 +1052,21 @@ async def list_surveys(limit: int = 25, skip: int = 0) -> str:
 async def get_survey_submissions(
     survey_id: Optional[str] = None,
     limit: int = 25,
-    skip: int = 0,
     start_at: Optional[str] = None,
     end_at: Optional[str] = None,
 ) -> str:
     """Get survey submission data.
 
+    GET /surveys/submissions rejects `skip` with a 422, so there is no offset
+    pagination here any more: raise `limit` or narrow with the date range.
+
     Args:
         survey_id: Filter to a specific survey ID (optional)
         limit: Number of results (max 100)
-        skip: Offset for pagination
         start_at: Filter submissions after this date (ISO 8601)
         end_at: Filter submissions before this date (ISO 8601)
     """
-    params: dict = {"locationId": _loc(), "limit": limit, "skip": skip}
+    params: dict = {"locationId": _loc(), "limit": limit}
     if survey_id:
         params["surveyId"] = survey_id
     if start_at:
